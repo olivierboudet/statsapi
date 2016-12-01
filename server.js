@@ -38,7 +38,7 @@ router
     stat.value = req.body.value
 
     stat.save().then(function() {
-      res.json({ message: 'Stat saved!' });
+      res.status(201);
     })
     .catch(function(err) {
       res.send(err);
