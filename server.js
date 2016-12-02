@@ -20,7 +20,7 @@ var Stat = require('./app/models/stat');
 var router = express.Router();
 
 router.use(function(req, res, next) {
-  console.log(req.method + ' ' + req.originalUrl);
+  console.log((new Date())+ req.method + ' ' + req.originalUrl);
   next();
 });
 
