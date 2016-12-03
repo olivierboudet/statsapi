@@ -36,9 +36,10 @@ router
     stat.time = new Date();
     stat.type = req.params.type
     stat.value = req.body.value
+    stat.room = req.body.room
 
     stat.save().then(function() {
-      res.status(201);
+      res.sendStatus(201);
     })
     .catch(function(err) {
       res.send(err);
