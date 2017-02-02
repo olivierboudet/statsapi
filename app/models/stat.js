@@ -4,7 +4,7 @@ var Schema       = mongoose.Schema;
 var StatSchema   = new Schema({
     time: Date,
     type: String,
-    value: Number,
+    values: {},
     room: String
 });
 

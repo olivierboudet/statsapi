@@ -1,6 +1,7 @@
 var express    = require('express');        // call express
 var app        = express();                 // define our app using express
 var bodyParser = require('body-parser');
+var moment     = require('moment');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -32,13 +33,19 @@ router
   .route('/stats/:type')
   .post(function(req, res) {
 
-    var stat = new Stat();
-    stat.time = new Date();
-    stat.type = req.params.type
-    stat.value = req.body.value
-    stat.room = req.body.room
+    var now = moment();
+    var hour = now.get('hour');
+    var minute = now.get('minute');
 
-    stat.save().then(function() {
+    var updateDoc = {};
+    updateDoc['values.' + hour + '.' + minute] = req.body.value;
+
+    Stat.update(
+      { time: now.startOf('day'), type: req.params.type, room: req.params.room },
+      { $set: updateDoc },
+      { upsert: true}
+    )
+    .then(function() {
       res.sendStatus(201);
     })
     .catch(function(err) {

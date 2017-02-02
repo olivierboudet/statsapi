@@ -12,6 +12,7 @@
     "app-config": "^1.0.0",
     "body-parser": "^1.15.2",
     "express": "^4.14.0",
+    "moment": "^2.17.1",
     "mongoose": "^4.6.7",
     "sequelize": "^3.25.0"
   }
