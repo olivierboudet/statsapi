@@ -16,7 +16,7 @@ mongoose.connect(`mongodb://${config.db.user}:${config.db.password}@${config.db.
 mongoose.Promise = global.Promise;
 
 var Stat = require('./app/models/stat');
-
+var Transformer = require('./app/transformer');
 
 var router = express.Router();
 
@@ -38,28 +38,44 @@ router
     var minute = now.get('minute');
 
     var updateDoc = {};
-    updateDoc['values.' + hour + '.' + minute] = req.body.value;
 
-    Stat.update(
-      { time: now.startOf('day'), type: req.params.type, room: req.params.room },
-      { $set: updateDoc },
-      { upsert: true}
-    )
-    .then(function() {
-      res.sendStatus(201);
-    })
-    .catch(function(err) {
-      res.send(err);
-    })
+    var transformer = Transformer.get(req.params.type);
+    transformer.process(req.params.type, req.body.value).then(function(value) {
+      console.log("value = " + value);
+      var granularity = req.body.granularity;
+      if (granularity === 'daily') {
+        updateDoc['values'] = value;
+      } else if (!granularity || granularity === 'minutely') {
+        updateDoc['values.' + hour + '.' + minute] = value;
+      }
+
+      Stat.update(
+        { time: now.startOf('day'), type: req.params.type, room: req.body.room },
+        { $set: updateDoc },
+        { upsert: true}
+      )
+      .then(function() {
+        res.sendStatus(201);
+      })
+      .catch(function(err) {
+        res.send(err);
+      })
+    });
   })
   .get(function(req, res) {
 
-    Stat.find({
-      type: req.params.type,
-      //time: {$gt: req.params.start, $lt: req.params.end},
-    })
+    var filters = {
+      type: req.params.type
+    }
+
+    if(req.query.start && req.query.end) {
+      var start = moment(req.query.start);
+      var end = moment(req.query.end);
+      filters.time = {$gte: start.toDate(), $lte: end.toDate()}
+    }
+
+    Stat.find(filters)
     .sort('-time')
-    .select('time value')
     .exec()
     .then(function(stats) {
       res.json(stats);
