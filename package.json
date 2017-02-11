@@ -14,6 +14,7 @@
     "express": "^4.14.0",
     "moment": "^2.17.1",
     "mongoose": "^4.6.7",
+    "mongodb-migrate" : "2.0.1",
     "sequelize": "^3.25.0"
   }
 }

@@ -9,23 +9,33 @@ var consoEDFTransformer = {
     return Stat.findOne({type: type, time: yesterday})
           .exec()
           .then(function(stat) {
-            return (value - stat.values);
+            var result = {};
+            result.last_index = value;
+
+            if(stat == undefined || stat.values == undefined) {
+              result.value = value;
+            } else {
+              result.value = (value - stat.values.last_index);
+            }
+
+            return result;
           });
   }
 }
 
 var transformers = {
   consoHP: consoEDFTransformer,
-  consoHC: consoEDFTransformer,
-  temperature: {
-    process: function(type, value) {
+  consoHC: consoEDFTransformer
+}
+
+module.exports.get = function(type) {
+  if(transformers[type] == undefined) {
+    return function(type, value) {
       return new Promise(function(resolve, reject) {
         resolve(value);
       });
     }
   }
-}
 
-module.exports.get = function(type) {
   return transformers[type];
 }
